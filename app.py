@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+import os
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -18,7 +19,8 @@ st.set_page_config(
 # =========================
 # LOAD MODEL
 # =========================
-model = joblib.load("movie_rating_predictor.pkl")
+model_path = os.path.join(os.path.dirname(__file__), "movie_rating_predictor.pkl")
+model = joblib.load(model_path)
 
 # =========================
 # DATA (DEMO / SAFE)
