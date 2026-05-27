@@ -107,7 +107,37 @@ li {
 
 </style>
 """, unsafe_allow_html=True)
+# =========================
+# DROPDOWN FIX
+# =========================
+st.markdown("""
+<style>
 
+/* Selectbox main area */
+div[data-baseweb="select"] > div {
+    background-color: white !important;
+    color: black !important;
+}
+
+/* Selected text */
+div[data-baseweb="select"] span {
+    color: black !important;
+}
+
+/* Dropdown options */
+li[role="option"] {
+    background-color: white !important;
+    color: black !important;
+}
+
+/* Hover effect */
+li[role="option"]:hover {
+    background-color: #FFD700 !important;
+    color: black !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 # =========================
 # LOAD MODEL
 # =========================
