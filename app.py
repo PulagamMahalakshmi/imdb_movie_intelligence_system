@@ -24,28 +24,63 @@ st.markdown("""
 <style>
 
 .stApp {
-    background-color: #0e1117;
-    color: white;
+    background-color: #111111;
+    color: #FFFFFF;
 }
 
 h1, h2, h3 {
-    color: #f5c518;
+    color: #FFD700;
 }
 
+/* Sidebar */
 section[data-testid="stSidebar"] {
-    background-color: #1c1c1c;
+    background-color: #1E1E1E;
 }
 
+/* Buttons */
 .stButton>button {
-    background-color: #f5c518;
+    background-color: #FFD700;
     color: black;
     border-radius: 10px;
     font-weight: bold;
     border: none;
+    padding: 0.5rem 1rem;
 }
 
 .stButton>button:hover {
-    background-color: #ffd54f;
+    background-color: #FFC107;
+    color: black;
+}
+
+/* Text Inputs */
+input, textarea {
+    color: white !important;
+    background-color: #2b2b2b !important;
+}
+
+/* Select Box */
+div[data-baseweb="select"] {
+    color: black;
+}
+
+/* Radio buttons */
+.stRadio label {
+    color: white !important;
+}
+
+/* Slider text */
+.stSlider label {
+    color: white !important;
+}
+
+/* Dataframe */
+[data-testid="stDataFrame"] {
+    background-color: white;
+}
+
+/* Markdown text */
+p, label, div {
+    color: white;
 }
 
 </style>
