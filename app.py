@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import joblib
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # =========================
-# PAGE CONFIG
+# PAGE CONFIG (MUST BE FIRST)
 # =========================
 st.set_page_config(
     page_title="IMDb Movie Intelligence System",
@@ -15,7 +16,12 @@ st.set_page_config(
 )
 
 # =========================
-# SAMPLE DATA (DEPLOYMENT SAFE)
+# LOAD MODEL
+# =========================
+model = joblib.load("movie_rating_predictor.pkl")
+
+# =========================
+# DATA (DEMO / SAFE)
 # =========================
 df = pd.DataFrame({
     "Name": ["Avatar", "Titanic", "Inception", "Interstellar", "Joker"],
@@ -27,33 +33,55 @@ df = pd.DataFrame({
 })
 
 # =========================
-# DUMMY MODEL (DEPLOYMENT SAFE)
+# SIDEBAR
 # =========================
-class DummyModel:
-    def predict(self, X):
-        return np.array([7.5])
+st.sidebar.title("🎬 Navigation")
 
-model = DummyModel()
+option = st.sidebar.radio(
+    "Select Feature",
+    ["Movie Recommendation", "Rating Prediction", "Dataset Overview"]
+)
+
+# =========================
+# SIMILARITY MODEL (CACHED)
+# =========================
+@st.cache_data
+def build_similarity(data):
+    temp = data.copy()
+
+    temp["features"] = (
+        temp["Genre"] + " " +
+        temp["Director"] + " " +
+        temp["Actor 1"] + " " +
+        temp["Actor 2"]
+    )
+
+    tfidf = TfidfVectorizer(stop_words="english")
+    matrix = tfidf.fit_transform(temp["features"])
+    return cosine_similarity(matrix)
+
+cosine_sim = build_similarity(df)
+
+# =========================
+# RECOMMEND FUNCTION
+# =========================
+def recommend(movie_name):
+    if movie_name not in df["Name"].values:
+        return []
+
+    idx = df[df["Name"] == movie_name].index[0]
+
+    scores = list(enumerate(cosine_sim[idx]))
+    scores = sorted(scores, key=lambda x: x[1], reverse=True)[1:4]
+
+    movie_indices = [i[0] for i in scores]
+    return df["Name"].iloc[movie_indices]
 
 # =========================
 # TITLE
 # =========================
 st.title("🎬 IMDb Movie Intelligence System")
-
-st.markdown("""
-### Features:
-- 🎥 Movie Recommendation System  
-- ⭐ Movie Rating Prediction  
-- 📊 Dataset Overview  
-""")
-
-# =========================
-# SIDEBAR MENU
-# =========================
-option = st.sidebar.selectbox(
-    "Choose Feature",
-    ["Movie Recommendation", "Rating Prediction", "Dataset Overview"]
-)
+st.markdown("AI-powered Movie Recommendation & Rating Prediction System")
 
 # =========================
 # MOVIE RECOMMENDATION
@@ -62,35 +90,18 @@ if option == "Movie Recommendation":
 
     st.header("🎥 Movie Recommendation System")
 
-    df['combined_features'] = (
-        df['Genre'] + " " +
-        df['Director'] + " " +
-        df['Actor 1'] + " " +
-        df['Actor 2']
-    )
+    selected_movie = st.selectbox("Select a Movie", df["Name"].tolist())
 
-    tfidf = TfidfVectorizer(stop_words='english')
-    tfidf_matrix = tfidf.fit_transform(df['combined_features'])
-    cosine_sim = cosine_similarity(tfidf_matrix)
+    if st.button("Recommend Movies"):
 
-    movie_list = df['Name'].tolist()
-
-    selected_movie = st.selectbox("Select a Movie", movie_list)
-
-    def recommend(movie):
-        idx = df[df['Name'] == movie].index[0]
-
-        scores = list(enumerate(cosine_sim[idx]))
-        scores = sorted(scores, key=lambda x: x[1], reverse=True)[1:4]
-
-        movie_indices = [i[0] for i in scores]
-        return df['Name'].iloc[movie_indices]
-
-    if st.button("Recommend"):
         results = recommend(selected_movie)
-        st.subheader("Recommended Movies:")
-        for r in results:
-            st.write("👉", r)
+
+        if len(results) > 0:
+            st.subheader("Recommended Movies")
+            for movie in results:
+                st.success(movie)
+        else:
+            st.warning("No recommendations found")
 
 # =========================
 # RATING PREDICTION
@@ -102,13 +113,37 @@ elif option == "Rating Prediction":
     year = st.number_input("Year", 1990, 2026, 2020)
     duration = st.number_input("Duration (minutes)", 60, 240, 120)
     votes = st.number_input("Votes", 100, 1000000, 5000)
+    genre_count = st.slider("Genre Count", 1, 5, 2)
+    director_freq = st.slider("Director Frequency", 1, 100, 10)
+    actor_freq = st.slider("Actor Frequency", 1, 100, 10)
+    genre_enc = st.slider("Genre Encoded", 0, 50, 5)
+    director_enc = st.slider("Director Encoded", 0, 500, 20)
 
     if st.button("Predict Rating"):
 
         movie_age = 2026 - year
 
-        input_data = pd.DataFrame([[year, duration, votes, movie_age]],
-                                  columns=['Year', 'Duration', 'Votes', 'Movie_Age'])
+        input_data = pd.DataFrame([[ 
+            year,
+            duration,
+            votes,
+            movie_age,
+            genre_count,
+            director_freq,
+            actor_freq,
+            genre_enc,
+            director_enc
+        ]], columns=[
+            "Year",
+            "Duration",
+            "Votes",
+            "Movie_Age",
+            "Genre_Count",
+            "Director_Frequency",
+            "Actor1_Frequency",
+            "Genre_Encoded",
+            "Director_Encoded"
+        ])
 
         prediction = model.predict(input_data)
 
@@ -121,10 +156,9 @@ else:
 
     st.header("📊 Dataset Overview")
 
-    st.write(df)
+    st.dataframe(df)
 
-    st.subheader("Dataset Shape")
-    st.write(df.shape)
+    st.write("Shape:", df.shape)
 
     st.subheader("Top Rated Movies")
     st.dataframe(df.sort_values(by="Rating", ascending=False))
