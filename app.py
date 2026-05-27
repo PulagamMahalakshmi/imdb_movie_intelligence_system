@@ -18,6 +18,56 @@ st.set_page_config(
 )
 
 # =========================
+# CUSTOM IMDb THEME
+# =========================
+st.markdown("""
+<style>
+
+/* Main background */
+.stApp {
+    background-color: #0E1117;
+    color: white;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #1C1C1C;
+}
+
+/* Buttons */
+.stButton>button {
+    background-color: #F5C518;
+    color: black;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+}
+
+/* Selectbox text */
+div[data-baseweb="select"] > div {
+    background-color: #FFFFFF !important;
+    color: black !important;
+}
+
+/* Dropdown options */
+ul {
+    background-color: white !important;
+    color: black !important;
+}
+
+/* Selected movie text */
+span {
+    color: black !important;
+}
+
+/* Headers */
+h1, h2, h3 {
+    color: #F5C518;
+}
+
+</style>
+""", unsafe_allow_html=True)
+# =========================
 # IMDb DARK THEME
 # =========================
 st.markdown("""
