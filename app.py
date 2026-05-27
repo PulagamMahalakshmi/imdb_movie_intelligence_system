@@ -86,6 +86,28 @@ p, label, div {
 </style>
 """, unsafe_allow_html=True)
 
+# Selectbox text color fix
+st.markdown("""
+<style>
+
+/* Selectbox selected value */
+div[data-baseweb="select"] > div {
+    color: black !important;
+    background-color: white !important;
+}
+
+/* Dropdown menu */
+ul {
+    background-color: white !important;
+}
+
+li {
+    color: black !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 # =========================
 # LOAD MODEL
 # =========================
